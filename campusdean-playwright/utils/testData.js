@@ -51,5 +51,23 @@ module.exports = {
     { id: '2', label: 'हिंदी', class: 'hi-IN' },
     { id: '3', label: 'ગુજ', class: 'gu-IN' },
     { id: '4', label: 'मराठी', class: 'mr-IN' }
-  ]
+  ],
+
+  // Student Master -> Add Student
+  student: {
+    defaults: { gender: 'Male', dob: '25/09/2003', mobile: '9876543210', middle: 'QA' },
+    namePrefix: 'Auto',
+    invalidMobiles: [
+      { value: '98765', why: 'too short' },
+      { value: '98765432101', why: 'too long' },
+      { value: 'abcdefghij', why: 'letters' },
+      { value: '0000000000', why: 'all zeros' },
+      { value: '5123456789', why: 'starts with 5' }
+    ],
+    messages: {
+      dobRequired: /enter date of birth/i,
+      smsRequired: /select at ?least one/i,
+      duplicate: /already|exist|duplicate/i
+    }
+  }
 };

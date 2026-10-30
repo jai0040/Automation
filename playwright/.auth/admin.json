@@ -1,0 +1,157 @@
+{
+  "cookies": [
+    {
+      "name": "ASP.NET_SessionId",
+      "value": "wjtuyl0vbowcbvp3tgmoen5c",
+      "domain": "staging.campusdean.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "cf_clearance",
+      "value": "Cv-LLKhkDp2LYvFEtMRz451ApJ2Q0O6Jwu3KiT_swwvGKP8rOnhZV8D6egIWI6fcRodUj-MvDfYWcpTCBusvuvxOc8Bnt0mgRd4GCixvo3WhPiwQL-ypR65OihC9dpnHMtqHbEV-qKjoNvN1YfYto4FmMRWIUQzn4-P08Wu9a82PAx9gFa-OoNEPFibGPl6B50MBN9xTxigbwou43_G7zqLOYApOMvuUf442ouyKndnjgV8nmlUUl9xrBSwFISgtL5hmhmb38LerHlVFvXffkZyB98hIo9yTClQb_Z9pCXNlO_fmaEA6ZYH8rE3CBtc-H0GkI2Nvr0Ed9KPbFU7XSoFM797-rzUxEAfz0Ss",
+      "domain": ".campusdean.com",
+      "path": "/",
+      "expires": 1824889717.037054,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None",
+      "partitionKey": "https://campusdean.com",
+      "_crHasCrossSiteAncestor": false
+    },
+    {
+      "name": "CDLV",
+      "value": "WmuNafB39HYsPBJHkqsSfQ==",
+      "domain": "staging.campusdean.com",
+      "path": "/",
+      "expires": 1827913719.069081,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "CKTimeZoneName",
+      "value": "M1TrajKuIRm+cUHQfr6s5yaz6xipC9vDtmDH/UhdJmw2gR/CcFnKfqy5sw1RGeeh",
+      "domain": "staging.campusdean.com",
+      "path": "/",
+      "expires": 1827913719.069181,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "CKLastSelectedSchool",
+      "value": "wRJnEpjbuXa5ZEtWGFf69Q==",
+      "domain": "staging.campusdean.com",
+      "path": "/",
+      "expires": 1827913719.069248,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "CKLocalIP",
+      "value": "hipr4UBgr9POm/oKBXPjxOdKs/uvwR/WDlfD9hLmriIg5J1yEJnM2OeIf1rDwjZRnUFgH3k+hGZfCo+JQS33MtrnTbJDced5L3pfO8ZadF8dU7SSEo5YtuXzbWQ5IDCf",
+      "domain": "staging.campusdean.com",
+      "path": "/",
+      "expires": 1827913719.069304,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "CKPublicIP",
+      "value": "vKuxKGUM59CRuOteCD0+kA==",
+      "domain": "staging.campusdean.com",
+      "path": "/",
+      "expires": 1827913719.06939,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "CKLatLong",
+      "value": "vKuxKGUM59CRuOteCD0+kA==",
+      "domain": "staging.campusdean.com",
+      "path": "/",
+      "expires": 1827913719.069463,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "DealersID",
+      "value": "WmuNafB39HYsPBJHkqsSfQ==",
+      "domain": "staging.campusdean.com",
+      "path": "/",
+      "expires": 1827913719.069503,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "CKLastSelectedSchoolSession",
+      "value": "QhmSWShlTXsosx9FLjXudw==",
+      "domain": "staging.campusdean.com",
+      "path": "/",
+      "expires": 1827913719.069544,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "CKLastSelectedSchoolLanguage",
+      "value": "KAHnfWPQBVm/q4xFLyxqEw==",
+      "domain": "staging.campusdean.com",
+      "path": "/",
+      "expires": 1827913719.069587,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "CKSchoolName",
+      "value": "QNNaKBppBskwp5SejW8BVSOFwZejPiAZ9mla7P7jq91oZH2mJrhG9Kecbr8kGzEh",
+      "domain": "staging.campusdean.com",
+      "path": "/",
+      "expires": 1827913719.069628,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "CKEduWareUserLogin",
+      "value": "gQMrbOfk2UGa1IohMhGrQ094L0U7UzAozBYIOvp5/EbsCJ0AdH6pFxsUSjpr/M5fqIYWbzrnYjpii9mHw+VLSiInfhF5TtsMKag0sg1NdII=",
+      "domain": "staging.campusdean.com",
+      "path": "/",
+      "expires": 1827913719.06967,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "CKEduWareUserLoginType",
+      "value": "WmuNafB39HYsPBJHkqsSfQ==",
+      "domain": "staging.campusdean.com",
+      "path": "/",
+      "expires": 1827913719.069712,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__cf_bm",
+      "value": "8Jc1ksrWK5ICJzNXiDR59RhSLPEOvlzdBuhm.hIS85U-1793353718.9442523-1.0.1.1-IEKx9UaZSoTSNEWBakL2_AoCBqzx__HWzntG19PP4_TsMRAyZpnnu1ohOLWqwCvqMBAOP_1samljHipVvp4iENtgECbnh34emcgtHS.ajn3RIFW7AERKCw9m_kRU.UI_",
+      "domain": ".freshchat.com",
+      "path": "/",
+      "expires": 1793355520.457388,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    }
+  ],
+  "origins": []
+}

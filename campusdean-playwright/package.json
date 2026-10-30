@@ -10,7 +10,9 @@
     "test:debug": "playwright test --debug",
     "test:login": "playwright test tests/login.spec.js",
     "test:smoke": "playwright test tests/smoke.spec.js",
-    "report": "playwright show-report"
+    "report": "playwright show-report",
+    "test:students": "playwright test --project=student-master",
+    "test:students:smoke": "playwright test --project=student-master --grep @smoke"
   },
   "keywords": [
     "playwright",

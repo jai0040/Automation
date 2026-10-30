@@ -26,6 +26,10 @@ function loadAndValidateEnv() {
   const LOGIN_PATH = process.env.LOGIN_PATH || '/Login/Index';
   const TEST_USERNAME = process.env.TEST_USERNAME || '';
   const TEST_PASSWORD = process.env.TEST_PASSWORD || '';
+  const STUDENT_COURSE = process.env.STUDENT_COURSE || 'Sem - 1';
+  const STUDENT_DIVISION = process.env.STUDENT_DIVISION || 'A';
+  const VIEWONLY_USERNAME = process.env.VIEWONLY_USERNAME || '';
+  const VIEWONLY_PASSWORD = process.env.VIEWONLY_PASSWORD || '';
   const TEST_INVALID_USERNAME = process.env.TEST_INVALID_USERNAME || 'invalid_qa_user_99999';
   const TEST_INVALID_PASSWORD = process.env.TEST_INVALID_PASSWORD || 'InvalidPassword#123';
   
@@ -54,6 +58,10 @@ function loadAndValidateEnv() {
     loginUrl,
     username: TEST_USERNAME,
     password: TEST_PASSWORD,
+    studentCourse: STUDENT_COURSE,
+    studentDivision: STUDENT_DIVISION,
+    viewOnlyUsername: VIEWONLY_USERNAME,
+    viewOnlyPassword: VIEWONLY_PASSWORD,
     invalidUsername: TEST_INVALID_USERNAME,
     invalidPassword: TEST_INVALID_PASSWORD,
     headless,

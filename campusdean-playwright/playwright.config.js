@@ -65,10 +65,25 @@ module.exports = defineConfig({
 
   /* Configure projects for major browsers - Chromium by default */
   projects: [
+    // Logs in once and saves the session for the student-master project
+    { name: 'setup', testMatch: /auth\.setup\.js/ },
+
+    // Existing login + smoke suites (unchanged behaviour)
     {
       name: 'chromium',
+      testIgnore: [/student-master\.spec\.js/, /auth\.setup\.js/],
+      use: { ...devices['Desktop Chrome'] },
+    },
+
+    // Student Master -> Add Student (needs a logged-in session)
+    {
+      name: 'student-master',
+      testMatch: /student-master\.spec\.js/,
+      dependencies: ['setup'],
+      timeout: 90 * 1000, // forms + saves are slower than login checks
       use: {
         ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/admin.json',
       },
     },
   ],

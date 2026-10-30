@@ -255,3 +255,25 @@ jobs:
         path: campusdean-playwright/playwright-report/
         retention-days: 14
 ```
+
+---
+
+## Student Master → Add Student suite (added)
+
+| File | Purpose |
+|---|---|
+| `tests/auth.setup.js` | Logs in once with your `LoginPage`, saves `playwright/.auth/admin.json` |
+| `tests/student-master.spec.js` | 26 tests, IDs (TC_001 …) match the Excel test-case sheet |
+| `pages/StudentMasterPage.js` | Navigation, grid filter, row helpers, cleanup delete |
+| `pages/AddStudentPage.js` | Create-form fields, dropdowns, validation messages |
+| `utils/testData.js` → `student` | Defaults, invalid mobiles, expected messages |
+
+New `.env` keys: `STUDENT_COURSE`, `STUDENT_DIVISION`, optional `VIEWONLY_USERNAME` / `VIEWONLY_PASSWORD`.
+
+```bash
+npm run test:students          # setup (login) + student-master tests
+npm run test:students:smoke    # only @smoke
+npm run test:login             # existing suites are unchanged
+```
+
+Locators on the Student Master/Add Student screens were inferred from a screen recording – fix them in the two page objects (look for `VERIFY`).
