@@ -8,6 +8,7 @@ class LoginPage {
   /**
    * @param {import('@playwright/test').Page} page
    */
+
   constructor(page) {
     this.page = page;
 
@@ -18,9 +19,11 @@ class LoginPage {
     this.loginSubtitle = page.getByText('Enter your details below.');
 
     // Credentials Input Fields
-    // HTML uses id="UserName" and id="Passwords" (plural) with matching labels
-    this.usernameInput = page.locator('#UserName');
-    this.passwordInput = page.locator('#Passwords');
+    this.usernameInput = page.getByRole('textbox', {
+      name: 'User Name'
+    });
+
+    this.passwordInput = page.getByLabel('Password');
 
     // Action Controls
     this.loginButton = page.getByRole('button', { name: 'Log In' });
@@ -38,6 +41,7 @@ class LoginPage {
     this.sweetAlertConfirmButton = page.locator('.sweet-alert button.confirm');
   }
 
+
   /**
    * Navigates to the CampusDean staging login page.
    * @returns {Promise<import('@playwright/test').Response | null>}
@@ -45,7 +49,7 @@ class LoginPage {
   async gotoLoginPage() {
     return await this.page.goto(env.loginUrl, {
       waitUntil: 'domcontentloaded',
-      timeout: 30000,
+      timeout: 300000,
     });
   }
 

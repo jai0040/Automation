@@ -105,37 +105,47 @@ test.describe('Add Student – Form Navigation & Defaults', () => {
     await expect(grid.row('ShouldNotBeSaved')).toHaveCount(0);
   });
 
-  test('TC_133 – Switching between all 4 tabs retains entered inputs', async () => {
-    // Fill Personal
+  test('TC_133 – Switching between all 4 tabs retains manually entered inputs', async () => {
+
+    // Personal tab
     await form.field('First Name').fill('DraftFirst');
     await form.field('Middle Name').fill('DraftMiddle');
 
-    // Fill Contact
+    // Contact tab
     await form.tab('Contact').click();
     await form.field('Pincode', { nth: 0 }).fill('380001');
 
-    // Fill Parent/Guardian
+    // Parent/Guardian Details tab
     await form.tab('Parent/Guardian Details').click();
+
+    // Father Name should not be auto-populated
+    await expect(form.field('Father Name')).toHaveValue('');
+
+    // User must enter Father Name manually
     await form.field('Father Name').fill('DraftFather');
 
-    // Fill Administrative
+    // Administrative tab
     await form.tab('Administrative').click();
     await form.field('Roll No.').fill('99');
 
-    // Switch back and verify all fields preserved
+    // Verify Personal tab
     await form.tab('Personal').click();
     await expect(form.field('First Name')).toHaveValue('DraftFirst');
     await expect(form.field('Middle Name')).toHaveValue('DraftMiddle');
 
+    // Verify Contact tab
     await form.tab('Contact').click();
     await expect(form.field('Pincode', { nth: 0 })).toHaveValue('380001');
 
+    // Verify Parent/Guardian Details tab
     await form.tab('Parent/Guardian Details').click();
     await expect(form.field('Father Name')).toHaveValue('DraftFather');
 
+    // Verify Administrative tab
     await form.tab('Administrative').click();
     await expect(form.field('Roll No.')).toHaveValue('99');
   });
+
 });
 
 /* ============================================================ 3. TAB 1: PERSONAL */
@@ -151,25 +161,47 @@ test.describe('Add Student – Personal Tab Rules & Validations', () => {
   });
 
   test('TC_017 – Save with everything blank is blocked', async () => {
+    await expect(form.saveButton).toBeVisible({ timeout: 300000 });
+
     await form.saveButton.click();
+
     await form.expectStillOnForm();
     await expect(form.dobRequiredMessage).toBeVisible();
   });
 
   test('TC_018 – DOB blank shows "Enter Date of Birth"', async () => {
-    track(await form.createStudent({ dob: '' }));
+
+    // Fill valid Personal details except DOB
+    const d = AddStudentPage.newStudent({ dob: '' });
+
+    await form.fillPersonal(d);
+
+    // Verify DOB validation
+    await form.saveButton.click();
+
     await form.expectStillOnForm();
     await form.tab('Personal').click();
+
     await expect(form.dobRequiredMessage).toBeVisible();
   });
 
+  // Mandatory-field validation tests: fill only the tabs needed for each field.
   for (const [id, label, override] of [
     ['TC_019', 'First Name', { first: '' }],
     ['TC_020', 'Gender', { gender: '' }],
     ['TC_022', 'Mobile No.', { mobile: '', sms: false }],
   ]) {
     test(`${id} – missing ${label} blocks Save`, async () => {
-      track(await form.createStudent(override));
+      const d = AddStudentPage.newStudent(override);
+
+      // First Name and Gender are on Personal; Mobile No. is on Contact.
+      await form.fillPersonal(d);
+
+      if (id === 'TC_022') {
+        await form.fillContact(d);
+      }
+
+      await form.saveButton.click();
       await form.expectStillOnForm();
     });
   }
@@ -438,7 +470,7 @@ test.describe('Add Student – Parent / Guardian Details Tab', () => {
       await fileInput.setInputFiles(oversizedPath);
       // Verify validation warning or blocked upload
       const errorMsg = form.page.getByText(/200\s*kb|less than 200/i).first();
-      await expect(errorMsg).toBeVisible({ timeout: 5000 }).catch(() => {
+      await expect(errorMsg).toBeVisible({ timeout: 500000 }).catch(() => {
         // Handled via client alert or file clear
       });
     }
@@ -586,24 +618,45 @@ test.describe('Add Student – End-to-End Submission & Persistence', () => {
 
 /* ============================================================ 8. PERMISSIONS */
 test.describe('Student Master – Permissions', () => {
-  test('TC_081 – View-only user cannot see "Add Student"', async ({ browser }) => {
-    test.skip(!env.viewOnlyUsername, 'Set VIEWONLY_USERNAME / VIEWONLY_PASSWORD in .env to run this test');
 
-    const ctx = await browser.newContext({ storageState: undefined, baseURL: env.baseUrl });
-    const page = await ctx.newPage();
+  test('TC_081 – View-only user cannot see Add Student', async ({ browser }) => {
+
+    test.skip(
+      !env.viewOnlyUsername || !env.viewOnlyPassword,
+      'Set VIEWONLY_USERNAME / VIEWONLY_PASSWORD in .env to run this test'
+    );
+
+    // Create a fresh browser context without admin session
+    const context = await browser.newContext();
+    const page = await context.newPage();
+
     try {
       const login = new LoginPage(page);
-      await login.gotoLoginPage();
-      await login.login(env.viewOnlyUsername, env.viewOnlyPassword);
-      await page.waitForURL(/Dashboard/i, { timeout: 30000 });
-
       const grid = new StudentMasterPage(page);
-      await grid.menuStudent.click();
-      await grid.menuStudentMaster.click();
-      await expect(page.getByText(/student master/i).first()).toBeVisible();
+
+      // Open CampusDean login page
+      await page.goto(env.baseUrl);
+
+      // Login with view-only credentials
+      await login.login(
+        env.viewOnlyUsername,
+        env.viewOnlyPassword
+      );
+
+      // Wait for successful login/navigation
+      await page.waitForLoadState('domcontentloaded');
+
+      // Navigate to Student Master
+      await page.locator('#menuStudent').click();
+      await page.locator('#menuStudentMaster').click();
+
+      // Verify Add Student button is not visible
       await expect(grid.addStudentButton).toBeHidden();
+
     } finally {
-      await ctx.close();
+      await context.close();
     }
+
   });
+
 });

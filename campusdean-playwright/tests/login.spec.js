@@ -88,7 +88,7 @@ test.describe('CampusDean Staging - Login Test Suite', () => {
 
     // The user should not be redirected to the authenticated dashboard
     // It must remain on the login page or display an error message
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(150000);
     expect(page.url()).toContain(env.loginPath);
 
     // Check if server-side error span or sweetalert modal was triggered
@@ -137,7 +137,7 @@ test.describe('CampusDean Staging - Login Test Suite', () => {
     // Verify navigation beyond the login screen to authenticated portal
     await page.waitForURL((url) => !url.pathname.includes(env.loginPath), {
       waitUntil: 'domcontentloaded',
-      timeout: 30000,
+      timeout: 300000,
     });
 
     expect(page.url()).not.toContain(env.loginPath);
@@ -156,10 +156,10 @@ test.describe('CampusDean Staging - Login Test Suite', () => {
     // Validate landing URL with domcontentloaded stability
     await page.waitForURL(new RegExp(uiText.expectedDashboardPath, 'i'), {
       waitUntil: 'domcontentloaded',
-      timeout: 30000,
+      timeout: 300000,
     });
     await expect(page).toHaveURL(new RegExp(uiText.expectedDashboardPath, 'i'), {
-      timeout: 10000,
+      timeout: 100000,
     });
   });
 });

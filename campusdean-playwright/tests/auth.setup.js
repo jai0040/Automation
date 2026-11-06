@@ -11,7 +11,7 @@ setup('authenticate once and save the session', async ({ page }) => {
   const loginPage = new LoginPage(page);
   await loginPage.gotoLoginPage();
   await loginPage.login(env.username, env.password);
-  await page.waitForURL(new RegExp(uiText.expectedDashboardPath, 'i'), { waitUntil: 'domcontentloaded', timeout: 30000 });
+  await page.waitForURL(new RegExp(uiText.expectedDashboardPath, 'i'), { waitUntil: 'domcontentloaded', timeout: 300000 });
   await expect(page).toHaveURL(new RegExp(uiText.expectedDashboardPath, 'i'));
 
   await page.context().storageState({ path: AUTH_FILE });

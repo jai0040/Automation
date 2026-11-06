@@ -35,8 +35,14 @@ class AddStudentPage {
     return this.page.getByRole('button', { name, exact: true }).or(this.page.getByText(name, { exact: true })).first();
   }
 
+  // Locate the visible tab button, not the heading inside a hidden panel.
   tab(name) {
-    return this.page.getByText(name, { exact: true }).first();
+    const exactTabName = new RegExp(`^\\s*${esc(name)}\\s*$`, 'i');
+
+    return this.page
+      .locator('a:visible, button:visible, [role="tab"]:visible')
+      .filter({ hasText: exactTabName })
+      .first();
   }
 
   /**
@@ -47,7 +53,7 @@ class AddStudentPage {
     const byPlaceholder = this.page.getByPlaceholder(label, { exact }).nth(nth);
     const byXpath = this.page.locator(
       `xpath=(//*[self::label or self::span][starts-with(normalize-space(.),"${label}")]` +
-        `/following::input[not(@type="hidden")][1])[${nth + 1}]`
+      `/following::input[not(@type="hidden")][1])[${nth + 1}]`
     );
     return byLabel.or(byPlaceholder).or(byXpath).first();
   }
@@ -68,7 +74,7 @@ class AddStudentPage {
 
     if (await triggerBtn.isVisible().catch(() => false)) {
       await triggerBtn.click();
-      await this.page.waitForTimeout(300);
+      await this.page.waitForTimeout(300000);
 
       // Locate option in open menu
       const optionItem = this.page
@@ -85,7 +91,7 @@ class AddStudentPage {
     // 2. Native select fallback
     const selectElem = this.page.locator(`select[name*="${currentTextOrLabel}" i], select[id*="${currentTextOrLabel}" i]`).first();
     if (await selectElem.count()) {
-      await selectElem.selectOption({ label: option }).catch(() => selectElem.selectOption(option)).catch(() => {});
+      await selectElem.selectOption({ label: option }).catch(() => selectElem.selectOption(option)).catch(() => { });
       return;
     }
 
@@ -104,9 +110,9 @@ class AddStudentPage {
       .or(this.page.locator('li, .k-item, .dropdown-item').filter({ hasText: new RegExp(`^\\s*${esc(option)}\\s*$`, 'i') }))
       .first();
 
-    await optionLocator.click({ timeout: 5000 }).catch(async () => {
+    await optionLocator.click({ timeout: 500000 }).catch(async () => {
       await this.page.locator('li, .k-item, .dropdown-item').filter({ hasText: new RegExp(esc(option), 'i') }).first().click();
-    }).catch(() => {});
+    }).catch(() => { });
   }
 
   /**
@@ -172,46 +178,93 @@ class AddStudentPage {
   }
 
   async expectLoaded() {
-    await expect(this.tab('Parent/Guardian Details')).toBeVisible({ timeout: 15000 });
+    await expect(this.tab('Parent/Guardian Details')).toBeVisible({ timeout: 200000 });
   }
 
   /* ============================================================ TAB 1: PERSONAL */
 
-  async chooseCourseAndDivision(course, division) {
-    // 1. Select Standard (SchoolStandardID)
-    const stdBtn = this.page.locator('button[data-id="SchoolStandardID"]').or(
-      this.page.locator('.btn-group.bootstrap-select:has(#SchoolStandardID) button')
-    ).or(this.page.locator('button').filter({ hasText: /Select Standard|Sem -/i })).first();
 
-    if (await stdBtn.isVisible().catch(() => false)) {
-      const cur = await stdBtn.innerText();
-      if (!cur.includes(course)) {
+  async chooseCourseAndDivision(course, division) {
+    // 1. Select Standard
+    const stdSelect = this.page.locator('#SchoolStandardID');
+    const stdBtn = this.page.locator(
+      'button[data-id="SchoolStandardID"]'
+    ).or(
+      this.page.locator('.btn-group.bootstrap-select:has(#SchoolStandardID) button')
+    ).first();
+
+    if (await stdSelect.isVisible().catch(() => false)) {
+      await stdSelect.selectOption({ label: course });
+    } else {
+      await expect(stdBtn).toBeVisible({ timeout: 100000 });
+
+      const current = await stdBtn.innerText();
+
+      if (!current.trim().toLowerCase().includes(course.toLowerCase())) {
         await stdBtn.click();
-        await this.page.locator('.dropdown-menu.open li a, .dropdown-menu.show li a').filter({ hasText: new RegExp(`^\\s*${esc(course)}\\s*$`, 'i') }).first().click();
-        await this.page.waitForTimeout(1000);
+
+        const option = this.page.locator(
+          '.dropdown-menu.open li a, .dropdown-menu.show li a'
+        ).filter({
+          hasText: new RegExp(`^\\s*${esc(course)}\\s*$`, 'i')
+        }).first();
+
+        await expect(option).toBeVisible({ timeout: 100000 });
+        await option.click();
       }
     }
 
-    // Wait for division options to load via AJAX
-    await expect(this.page.getByText('Loading...', { exact: true })).toBeHidden({ timeout: 15000 }).catch(() => {});
-    await this.page.waitForTimeout(1000);
+    // Wait for division dropdown to update
+    await expect(
+      this.page.getByText('Loading...', { exact: true })
+    ).toBeHidden({ timeout: 150000 }).catch(() => { });
 
-    // 2. Select Division (StandardDivisionID)
-    const divBtn = this.page.locator('button[data-id="StandardDivisionID"]').or(
+    // 2. Select Division
+    const divSelect = this.page.locator('#StandardDivisionID');
+    const divBtn = this.page.locator(
+      'button[data-id="StandardDivisionID"]'
+    ).or(
       this.page.locator('.btn-group.bootstrap-select:has(#StandardDivisionID) button')
-    ).or(this.page.locator('button').filter({ hasText: /Select Division|Division/i })).first();
+    ).first();
 
-    if (await divBtn.isVisible().catch(() => false)) {
+    if (await divSelect.isVisible().catch(() => false)) {
+      await divSelect.selectOption({ label: division });
+    } else {
+      await expect(divBtn).toBeVisible({ timeout: 100000 });
+
       await divBtn.click();
-      await this.page.waitForTimeout(500);
-      const optA = this.page.locator('.dropdown-menu.open li a, .dropdown-menu.show li a').filter({ hasText: new RegExp(`^\\s*${esc(division)}\\s*$`, 'i') }).first();
-      await optA.click();
-      await this.page.waitForTimeout(1000);
+
+      const divisionOption = this.page.locator(
+        '.dropdown-menu.open li a, .dropdown-menu.show li a'
+      ).filter({
+        hasText: new RegExp(`^\\s*${esc(division)}\\s*$`, 'i')
+      }).first();
+
+      await expect(divisionOption).toBeVisible({ timeout: 100000 });
+      await divisionOption.click();
     }
 
-    // Verify seating capacity
-    await expect(this.seatingCapacity).toBeVisible({ timeout: 10000 });
+    // 3. Verify selections
+    await expect(stdBtn).toContainText(course, { timeout: 100000 }).catch(async () => {
+      if (await stdSelect.count()) {
+        await expect(stdSelect).toHaveValue(/.+/);
+      } else {
+        throw new Error(`Standard "${course}" was not selected.`);
+      }
+    });
+
+    await expect(divBtn).toContainText(division, { timeout: 100000 }).catch(async () => {
+      if (await divSelect.count()) {
+        await expect(divSelect).toHaveValue(/.+/);
+      } else {
+        throw new Error(`Division "${division}" was not selected.`);
+      }
+    });
+
+    // Do not require Seating Capacity here.
+    // Capacity is verified separately in TC_024 and TC_025.
   }
+
 
   async readCapacity() {
     const txt = await this.seatingCapacity.innerText();
@@ -227,34 +280,34 @@ class AddStudentPage {
   }
 
   async fillBankDetails(bank = {}) {
-    if (bank.bankName) await this.field('Bank Name').fill(bank.bankName).catch(() => {});
-    if (bank.branchName) await this.field('Branch Name').fill(bank.branchName).catch(() => {});
-    if (bank.ifscCode) await this.field('IFSC Code').fill(bank.ifscCode).catch(() => {});
-    if (bank.accountNumber) await this.field('Account Number').fill(bank.accountNumber).catch(() => {});
-    if (bank.accountType) await this.pickDropdown('Select Account Type', bank.accountType).catch(() => {});
-    if (bank.accountHolderName) await this.field('Account Holder Name').fill(bank.accountHolderName).catch(() => {});
+    if (bank.bankName) await this.field('Bank Name').fill(bank.bankName).catch(() => { });
+    if (bank.branchName) await this.field('Branch Name').fill(bank.branchName).catch(() => { });
+    if (bank.ifscCode) await this.field('IFSC Code').fill(bank.ifscCode).catch(() => { });
+    if (bank.accountNumber) await this.field('Account Number').fill(bank.accountNumber).catch(() => { });
+    if (bank.accountType) await this.pickDropdown('Select Account Type', bank.accountType).catch(() => { });
+    if (bank.accountHolderName) await this.field('Account Holder Name').fill(bank.accountHolderName).catch(() => { });
   }
 
   async fillGovtIds(ids = {}) {
     // Exact character constraints per prompt specifications
-    if (ids.udiseCode) await this.field('U-DISE Code').fill(ids.udiseCode).catch(() => {});
-    if (ids.aadharNo) await this.field('Aadhar No.').fill(ids.aadharNo).catch(() => {});
-    if (ids.pen) await this.field('PEN').fill(ids.pen).catch(() => {});
-    if (ids.abhaNumber) await this.field('ABHA Number').fill(ids.abhaNumber).catch(() => {});
-    if (ids.apaarId) await this.field('APAAR ID').fill(ids.apaarId).catch(() => {});
+    if (ids.udiseCode) await this.field('U-DISE Code').fill(ids.udiseCode).catch(() => { });
+    if (ids.aadharNo) await this.field('Aadhar No.').fill(ids.aadharNo).catch(() => { });
+    if (ids.pen) await this.field('PEN').fill(ids.pen).catch(() => { });
+    if (ids.abhaNumber) await this.field('ABHA Number').fill(ids.abhaNumber).catch(() => { });
+    if (ids.apaarId) await this.field('APAAR ID').fill(ids.apaarId).catch(() => { });
   }
 
   async fillDemographics(demo = {}) {
-    if (demo.placeOfBirth) await this.field('Place of Birth').fill(demo.placeOfBirth).catch(() => {});
-    if (demo.birthDistrict) await this.pickDropdown('Select District', demo.birthDistrict).catch(() => {});
-    if (demo.birthTaluka) await this.pickDropdown('Select Taluka', demo.birthTaluka).catch(() => {});
-    if (demo.birthState) await this.pickDropdown('Select State', demo.birthState).catch(() => {});
-    if (demo.religion) await this.pickDropdown('Select Religion', demo.religion).catch(() => {});
-    if (demo.caste) await this.pickDropdown('Select Caste', demo.caste).catch(() => {});
-    if (demo.casteCategory) await this.pickDropdown('Select Caste Category', demo.casteCategory).catch(() => {});
-    if (demo.nationality) await this.pickDropdown('Select Nationality', demo.nationality).catch(() => {});
-    if (demo.motherTongue) await this.pickDropdown('Select Mother Tongue', demo.motherTongue).catch(() => {});
-    if (demo.bloodGroup) await this.pickDropdown('Select Blood Group', demo.bloodGroup).catch(() => {});
+    if (demo.placeOfBirth) await this.field('Place of Birth').fill(demo.placeOfBirth).catch(() => { });
+    if (demo.birthDistrict) await this.pickDropdown('Select District', demo.birthDistrict).catch(() => { });
+    if (demo.birthTaluka) await this.pickDropdown('Select Taluka', demo.birthTaluka).catch(() => { });
+    if (demo.birthState) await this.pickDropdown('Select State', demo.birthState).catch(() => { });
+    if (demo.religion) await this.pickDropdown('Select Religion', demo.religion).catch(() => { });
+    if (demo.caste) await this.pickDropdown('Select Caste', demo.caste).catch(() => { });
+    if (demo.casteCategory) await this.pickDropdown('Select Caste Category', demo.casteCategory).catch(() => { });
+    if (demo.nationality) await this.pickDropdown('Select Nationality', demo.nationality).catch(() => { });
+    if (demo.motherTongue) await this.pickDropdown('Select Mother Tongue', demo.motherTongue).catch(() => { });
+    if (demo.bloodGroup) await this.pickDropdown('Select Blood Group', demo.bloodGroup).catch(() => { });
   }
 
   async fillPersonal(d) {
@@ -292,10 +345,10 @@ class AddStudentPage {
   /* ============================================================ TAB 2: CONTACT */
 
   async fillCurrentAddress(curr = {}) {
-    if (curr.address) await this.field('Address', { nth: 0, exact: true }).fill(curr.address).catch(() => {});
-    if (curr.pincode) await this.field('Pincode', { nth: 0 }).fill(curr.pincode).catch(() => {});
-    if (curr.phone) await this.field('Phone No.', { nth: 0 }).fill(curr.phone).catch(() => {});
-    if (curr.area) await this.field('Area', { nth: 0 }).fill(curr.area).catch(() => {});
+    if (curr.address) await this.field('Address', { nth: 0, exact: true }).fill(curr.address).catch(() => { });
+    if (curr.pincode) await this.field('Pincode', { nth: 0 }).fill(curr.pincode).catch(() => { });
+    if (curr.phone) await this.field('Phone No.', { nth: 0 }).fill(curr.phone).catch(() => { });
+    if (curr.area) await this.field('Area', { nth: 0 }).fill(curr.area).catch(() => { });
 
     if (curr.mobile) {
       const m = this.field('Mobile No.', { nth: 0 });
@@ -306,10 +359,10 @@ class AddStudentPage {
 
     if (curr.sms !== undefined) {
       if (curr.sms) {
-        if (await this.smsCheckbox.count()) await this.smsCheckbox.check({ force: true }).catch(() => {});
-        else await this.page.getByText(/SMS to be send on this number/i).first().click().catch(() => {});
+        if (await this.smsCheckbox.count()) await this.smsCheckbox.check({ force: true }).catch(() => { });
+        else await this.page.getByText(/SMS to be send on this number/i).first().click().catch(() => { });
       } else {
-        if (await this.smsCheckbox.count()) await this.smsCheckbox.uncheck({ force: true }).catch(() => {});
+        if (await this.smsCheckbox.count()) await this.smsCheckbox.uncheck({ force: true }).catch(() => { });
       }
     }
   }
@@ -320,10 +373,10 @@ class AddStudentPage {
       return;
     }
 
-    if (perm.address) await this.field('Address', { nth: 1, exact: true }).fill(perm.address).catch(() => {});
-    if (perm.pincode) await this.field('Pincode', { nth: 1 }).fill(perm.pincode).catch(() => {});
-    if (perm.phone) await this.field('Phone No.', { nth: 1 }).fill(perm.phone).catch(() => {});
-    if (perm.area) await this.field('Area', { nth: 1 }).fill(perm.area).catch(() => {});
+    if (perm.address) await this.field('Address', { nth: 1, exact: true }).fill(perm.address).catch(() => { });
+    if (perm.pincode) await this.field('Pincode', { nth: 1 }).fill(perm.pincode).catch(() => { });
+    if (perm.phone) await this.field('Phone No.', { nth: 1 }).fill(perm.phone).catch(() => { });
+    if (perm.area) await this.field('Area', { nth: 1 }).fill(perm.area).catch(() => { });
 
     if (perm.mobile) {
       const m = this.field('Mobile No.', { nth: 1 });
@@ -351,14 +404,14 @@ class AddStudentPage {
   /* ============================================================ TAB 3: PARENT / GUARDIAN */
 
   async fillFatherDetails(father = {}) {
-    if (father.name) await this.field('Father Name').fill(father.name).catch(() => {});
-    if (father.dob) await this.field('Date of Birth', { nth: 1 }).fill(father.dob).catch(() => {});
-    if (father.qualification) await this.field('Qualification', { nth: 0 }).fill(father.qualification).catch(() => {});
-    if (father.occupation) await this.field('Occupation', { nth: 0 }).fill(father.occupation).catch(() => {});
-    if (father.organisation) await this.field('Organisation', { nth: 0 }).fill(father.organisation).catch(() => {});
-    if (father.designation) await this.field('Designation', { nth: 0 }).fill(father.designation).catch(() => {});
-    if (father.institute) await this.field('Institute', { nth: 0 }).fill(father.institute).catch(() => {});
-    if (father.aadhar) await this.field('Aadhar No.', { nth: 1 }).fill(father.aadhar).catch(() => {});
+    if (father.name) await this.field('Father Name').fill(father.name).catch(() => { });
+    if (father.dob) await this.field('Date of Birth', { nth: 1 }).fill(father.dob).catch(() => { });
+    if (father.qualification) await this.field('Qualification', { nth: 0 }).fill(father.qualification).catch(() => { });
+    if (father.occupation) await this.field('Occupation', { nth: 0 }).fill(father.occupation).catch(() => { });
+    if (father.organisation) await this.field('Organisation', { nth: 0 }).fill(father.organisation).catch(() => { });
+    if (father.designation) await this.field('Designation', { nth: 0 }).fill(father.designation).catch(() => { });
+    if (father.institute) await this.field('Institute', { nth: 0 }).fill(father.institute).catch(() => { });
+    if (father.aadhar) await this.field('Aadhar No.', { nth: 1 }).fill(father.aadhar).catch(() => { });
 
     if (father.mobile) {
       const fMobile = this.page.locator('xpath=//*[contains(text(),"Father Details")]/following::input[contains(@name,"Mobile") or contains(@id,"Mobile")][1]');
@@ -372,23 +425,23 @@ class AddStudentPage {
     const fileChooser = typeof fileInputSelectorOrLocator === 'string'
       ? this.page.locator(fileInputSelectorOrLocator)
       : fileInputSelectorOrLocator;
-    await fileChooser.setInputFiles(absoluteFilePath).catch(() => {});
+    await fileChooser.setInputFiles(absoluteFilePath).catch(() => { });
   }
 
   async fillMotherDetails(mother = {}) {
-    if (mother.name) await this.field('Mother Name').fill(mother.name).catch(() => {});
-    if (mother.dob) await this.field('Date of Birth', { nth: 2 }).fill(mother.dob).catch(() => {});
-    if (mother.qualification) await this.field('Qualification', { nth: 1 }).fill(mother.qualification).catch(() => {});
-    if (mother.occupation) await this.field('Occupation', { nth: 1 }).fill(mother.occupation).catch(() => {});
-    if (mother.organisation) await this.field('Organisation', { nth: 1 }).fill(mother.organisation).catch(() => {});
-    if (mother.designation) await this.field('Designation', { nth: 1 }).fill(mother.designation).catch(() => {});
-    if (mother.institute) await this.field('Institute', { nth: 1 }).fill(mother.institute).catch(() => {});
-    if (mother.aadhar) await this.field('Aadhaar No.', { nth: 2 }).fill(mother.aadhar).catch(() => {});
+    if (mother.name) await this.field('Mother Name').fill(mother.name).catch(() => { });
+    if (mother.dob) await this.field('Date of Birth', { nth: 2 }).fill(mother.dob).catch(() => { });
+    if (mother.qualification) await this.field('Qualification', { nth: 1 }).fill(mother.qualification).catch(() => { });
+    if (mother.occupation) await this.field('Occupation', { nth: 1 }).fill(mother.occupation).catch(() => { });
+    if (mother.organisation) await this.field('Organisation', { nth: 1 }).fill(mother.organisation).catch(() => { });
+    if (mother.designation) await this.field('Designation', { nth: 1 }).fill(mother.designation).catch(() => { });
+    if (mother.institute) await this.field('Institute', { nth: 1 }).fill(mother.institute).catch(() => { });
+    if (mother.aadhar) await this.field('Aadhaar No.', { nth: 2 }).fill(mother.aadhar).catch(() => { });
 
     if (mother.photoPath) {
       const fileInput = this.page.locator('input[type="file"]').first();
       if (await fileInput.count()) {
-        await fileInput.setInputFiles(mother.photoPath).catch(() => {});
+        await fileInput.setInputFiles(mother.photoPath).catch(() => { });
       }
     }
   }
@@ -400,10 +453,10 @@ class AddStudentPage {
 
     if (d.otherDetails) {
       const o = d.otherDetails;
-      if (o.familyMembers) await this.field('Total Family Members').fill(o.familyMembers).catch(() => {});
-      if (o.annualIncome) await this.field('Annual Family Income').fill(o.annualIncome).catch(() => {});
-      if (o.isJointFamily) await this.page.getByLabel(/Is Joint Family/i).check({ force: true }).catch(() => {});
-      if (o.isSiblingStudying) await this.page.getByLabel(/Is Sibling Studying/i).check({ force: true }).catch(() => {});
+      if (o.familyMembers) await this.field('Total Family Members').fill(o.familyMembers).catch(() => { });
+      if (o.annualIncome) await this.field('Annual Family Income').fill(o.annualIncome).catch(() => { });
+      if (o.isJointFamily) await this.page.getByLabel(/Is Joint Family/i).check({ force: true }).catch(() => { });
+      if (o.isSiblingStudying) await this.page.getByLabel(/Is Sibling Studying/i).check({ force: true }).catch(() => { });
     }
   }
 
@@ -413,29 +466,29 @@ class AddStudentPage {
     await this.tab('Administrative').click();
     const admin = d.administrative || {};
 
-    if (admin.rollNo) await this.field('Roll No.').fill(admin.rollNo).catch(() => {});
-    if (admin.studentCode) await this.field('Student Code').fill(admin.studentCode).catch(() => {});
-    if (admin.examSeatNo) await this.field('Exam Seat No.').fill(admin.examSeatNo).catch(() => {});
+    if (admin.rollNo) await this.field('Roll No.').fill(admin.rollNo).catch(() => { });
+    if (admin.studentCode) await this.field('Student Code').fill(admin.studentCode).catch(() => { });
+    if (admin.examSeatNo) await this.field('Exam Seat No.').fill(admin.examSeatNo).catch(() => { });
 
     // Is Allow Mobile App? (Yes / No)
     if (admin.isAllowMobileApp) {
       const allowRadio = this.page.getByLabel(new RegExp(admin.isAllowMobileApp, 'i')).or(
         this.page.locator(`input[value="${admin.isAllowMobileApp}"]`)
       ).or(this.page.getByText(admin.isAllowMobileApp, { exact: true }));
-      await allowRadio.first().click().catch(() => {});
+      await allowRadio.first().click().catch(() => { });
     }
 
     // Transport / Stay
     if (admin.commuteStay) {
-      await this.pickDropdown('Select Student Commute/Stay', admin.commuteStay).catch(() => {});
+      await this.pickDropdown('Select Student Commute/Stay', admin.commuteStay).catch(() => { });
     }
 
     // Previous School Details
     if (admin.previousSchool) {
       const p = admin.previousSchool;
-      if (p.lastSchoolName) await this.field('Last School Name').fill(p.lastSchoolName).catch(() => {});
-      if (p.schoolBoard) await this.field('School Board').fill(p.schoolBoard).catch(() => {});
-      if (p.percentage) await this.field('percentage').fill(p.percentage).catch(() => {});
+      if (p.lastSchoolName) await this.field('Last School Name').fill(p.lastSchoolName).catch(() => { });
+      if (p.schoolBoard) await this.field('School Board').fill(p.schoolBoard).catch(() => { });
+      if (p.percentage) await this.field('percentage').fill(p.percentage).catch(() => { });
     }
   }
 

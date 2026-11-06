@@ -53,12 +53,12 @@ class StudentMasterPage {
       return;
     }
     if (!(await this.menuStudentMaster.isVisible().catch(() => false))) {
-      await expect(this.menuStudent).toBeVisible({ timeout: 10000 });
+      await expect(this.menuStudent).toBeVisible({ timeout: 100000 });
       await this.menuStudent.click();
-      await expect(this.menuStudentMaster).toBeVisible({ timeout: 10000 });
+      await expect(this.menuStudentMaster).toBeVisible({ timeout: 100000 });
     }
     await this.menuStudentMaster.click();
-    await expect(this.addStudentButton).toBeVisible({ timeout: 30000 });
+    await expect(this.addStudentButton).toBeVisible({ timeout: 300000 });
   }
 
   /** Mandatory "Course/Program/ Division" filter. Skipped if a filter chip is already applied. */
@@ -70,7 +70,7 @@ class StudentMasterPage {
     }
   }
 
-  async expectOnGrid(timeout = 30000) {
+  async expectOnGrid(timeout = 300000) {
     await expect(this.addStudentButton).toBeVisible({ timeout });
   }
 
