@@ -513,11 +513,11 @@ test.describe('Add Student – Administrative Tab Rules & Validations', () => {
     await form.fillAdministrative({
       administrative: { isAllowMobileApp: 'Yes' },
     });
-
-    // Toggle to No
+    // Add assertion to verify Yes is selected.
     await form.fillAdministrative({
       administrative: { isAllowMobileApp: 'No' },
     });
+    // Add assertion to verify No is selected.
   });
 
   test('TC_130 – Previous School Details entry (School Name, Board, Percentage)', async () => {

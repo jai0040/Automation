@@ -48,17 +48,29 @@ class StudentMasterPage {
 
   /** Dashboard → Student → Student Master, exactly like the recorded flow. */
   async open() {
-    await this.page.goto('/Dashboard/Index', { waitUntil: 'domcontentloaded' });
+    await this.page.goto('/Dashboard/Index', {
+      waitUntil: 'domcontentloaded',
+    });
+
+    // If already on Student Master grid, do not navigate again.
     if (await this.addStudentButton.isVisible().catch(() => false)) {
       return;
     }
+
     if (!(await this.menuStudentMaster.isVisible().catch(() => false))) {
-      await expect(this.menuStudent).toBeVisible({ timeout: 100000 });
+      await expect(this.menuStudent).toBeVisible({ timeout: 15000 });
       await this.menuStudent.click();
-      await expect(this.menuStudentMaster).toBeVisible({ timeout: 100000 });
     }
+
+    await expect(this.menuStudentMaster).toBeVisible({ timeout: 15000 });
     await this.menuStudentMaster.click();
-    await expect(this.addStudentButton).toBeVisible({ timeout: 300000 });
+
+    // Verify the actual visible text on the grid.
+    await expect(this.addStudentButton).toBeVisible({ timeout: 30000 });
+  }
+
+  async expectOnGrid(timeout = 30000) {
+    await expect(this.addStudentButton).toBeVisible({ timeout });
   }
 
   /** Mandatory "Course/Program/ Division" filter. Skipped if a filter chip is already applied. */
@@ -70,18 +82,19 @@ class StudentMasterPage {
     }
   }
 
-  async expectOnGrid(timeout = 300000) {
+  async expectOnGrid(timeout = 30000) {
     await expect(this.addStudentButton).toBeVisible({ timeout });
   }
 
   /** After a save the app returns to the grid (filter auto-applied in the recording). */
   async expectStudentListed(student) {
     await this.expectOnGrid();
-    const row = this.row(student.fullName);
-    if (!(await row.first().isVisible().catch(() => false))) {
+    let row = this.row(student.fullName);
+    if (!(await row.isVisible().catch(() => false))) {
       await this.filterBy(student.course, student.division);
     }
-    await expect(row).toHaveCount(1);
+    row = this.row(student.fullName);
+    await expect(row).toHaveCount(1, { timeout: 15000 });
     return row;
   }
 
